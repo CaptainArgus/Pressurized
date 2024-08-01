@@ -2,11 +2,12 @@ package com.argus.pressurized.client.render;
 
 import com.argus.pressurized.Pressurized;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -14,7 +15,7 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 import java.util.HashSet;
@@ -73,22 +74,21 @@ public class WireframeRenderer {
         Vec3 cameraPos = minecraft.gameRenderer.getMainCamera().getPosition();
         AABB box = new AABB(pos).inflate(scale).move(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
+        RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.lineWidth(2.0F);
+        RenderSystem.lineWidth(3.0F);
         RenderSystem.depthMask(false);
-        RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
 
-        Matrix4f matrix = poseStack.last().pose();
         VertexConsumer buffer = minecraft.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
 
-        drawBox(buffer, box, matrix, color);
+        drawBox(buffer, box, poseStack, color);
 
         RenderSystem.depthMask(true);
         minecraft.renderBuffers().bufferSource().endBatch(RenderType.LINES);
     }
 
-    private static void drawBox(VertexConsumer buffer, AABB box, Matrix4f matrix, int color) {
+    private static void drawBox(VertexConsumer buffer, AABB box, PoseStack stack, int color) {
         float red = (color >> 16 & 255) / 255.0F;
         float green = (color >> 8 & 255) / 255.0F;
         float blue = (color & 255) / 255.0F;
@@ -102,27 +102,30 @@ public class WireframeRenderer {
         float maxZ = (float) box.maxZ;
 
         //bottom
-        drawLine(buffer, matrix, minX, minY, minZ, maxX, minY, minZ, red, green, blue, alpha);
-        drawLine(buffer, matrix, maxX, minY, minZ, maxX, minY, maxZ, red, green, blue, alpha);
-        drawLine(buffer, matrix, maxX, minY, maxZ, minX, minY, maxZ, red, green, blue, alpha);
-        drawLine(buffer, matrix, minX, minY, maxZ, minX, minY, minZ, red, green, blue, alpha);
+        drawLine(buffer, stack, minX, minY, minZ, maxX, minY, minZ, red, green, blue, alpha);
+        drawLine(buffer, stack, maxX, minY, minZ, maxX, minY, maxZ, red, green, blue, alpha);
+        drawLine(buffer, stack, maxX, minY, maxZ, minX, minY, maxZ, red, green, blue, alpha);
+        drawLine(buffer, stack, minX, minY, maxZ, minX, minY, minZ, red, green, blue, alpha);
 
         //top
-        drawLine(buffer, matrix, minX, maxY, minZ, maxX, maxY, minZ, red, green, blue, alpha);
-        drawLine(buffer, matrix, maxX, maxY, minZ, maxX, maxY, maxZ, red, green, blue, alpha);
-        drawLine(buffer, matrix, maxX, maxY, maxZ, minX, maxY, maxZ, red, green, blue, alpha);
-        drawLine(buffer, matrix, minX, maxY, maxZ, minX, maxY, minZ, red, green, blue, alpha);
+        drawLine(buffer, stack, minX, maxY, minZ, maxX, maxY, minZ, red, green, blue, alpha);
+        drawLine(buffer, stack, maxX, maxY, minZ, maxX, maxY, maxZ, red, green, blue, alpha);
+        drawLine(buffer, stack, maxX, maxY, maxZ, minX, maxY, maxZ, red, green, blue, alpha);
+        drawLine(buffer, stack, minX, maxY, maxZ, minX, maxY, minZ, red, green, blue, alpha);
 
         //vertical
-        drawLine(buffer, matrix, minX, minY, minZ, minX, maxY, minZ, red, green, blue, alpha);
-        drawLine(buffer, matrix, maxX, minY, minZ, maxX, maxY, minZ, red, green, blue, alpha);
-        drawLine(buffer, matrix, maxX, minY, maxZ, maxX, maxY, maxZ, red, green, blue, alpha);
-        drawLine(buffer, matrix, minX, minY, maxZ, minX, maxY, maxZ, red, green, blue, alpha);
+        drawLine(buffer, stack, minX, minY, minZ, minX, maxY, minZ, red, green, blue, alpha);
+        drawLine(buffer, stack, maxX, minY, minZ, maxX, maxY, minZ, red, green, blue, alpha);
+        drawLine(buffer, stack, maxX, minY, maxZ, maxX, maxY, maxZ, red, green, blue, alpha);
+        drawLine(buffer, stack, minX, minY, maxZ, minX, maxY, maxZ, red, green, blue, alpha);
     }
 
-    private static void drawLine(VertexConsumer buffer, Matrix4f matrix, float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b, float a) {
-        buffer.vertex(matrix, x1, y1, z1).color(r, g, b, a).endVertex();
-        buffer.vertex(matrix, x2, y2, z2).color(r, g, b, a).endVertex();
+    private static void drawLine(VertexConsumer buffer, PoseStack stack, float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b, float a) {
+        Matrix4f matrix4f = stack.last().pose();
+        Matrix3f matrix3f = stack.last().normal();
+        Vec3 normal = new Vec3(x2 - x1, y2 - y1, z2 - z1).normalize();
+        buffer.vertex(matrix4f, x1, y1, z1).color(r, g, b, a).normal(matrix3f, (float) normal.x, (float) normal.y, (float) normal.z).endVertex();
+        buffer.vertex(matrix4f, x2, y2, z2).color(r, g, b, a).normal(matrix3f, (float) normal.x, (float) normal.y, (float) normal.z).endVertex();
     }
 
     private static class Wireframe {

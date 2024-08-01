@@ -1,5 +1,6 @@
 {
   "values": [
-    "minecraft:stone"
+    "minecraft:stone",
+    "pressurized:coiler_core"
   ]
 }

@@ -8,7 +8,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,6 +17,10 @@ import java.util.stream.Collectors;
 @Mod.EventBusSubscriber(modid = Pressurized.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Config {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+
+    private static final ForgeConfigSpec.IntValue MAX_BOILER_SIZE = BUILDER
+            .comment("The max width/height/length a boiler can have")
+            .defineInRange("maxBoilerSize", 16, 1, 100);
 
     private static final ForgeConfigSpec.BooleanValue LOG_DIRT_BLOCK = BUILDER
             .comment("Whether to log the dirt block on common setup")
@@ -38,6 +41,7 @@ public class Config {
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
+    public static int maxBoilerSize;
     public static boolean logDirtBlock;
     public static int magicNumber;
     public static String magicNumberIntroduction;
@@ -49,6 +53,7 @@ public class Config {
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
+        maxBoilerSize = MAX_BOILER_SIZE.get();
         logDirtBlock = LOG_DIRT_BLOCK.get();
         magicNumber = MAGIC_NUMBER.get();
         magicNumberIntroduction = MAGIC_NUMBER_INTRODUCTION.get();

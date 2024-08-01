@@ -1,8 +1,8 @@
 {
   "variants": {
-    "facing=north": { "model": "pressurized:block/boiler_core.json" },
-    "facing=east": { "model": "pressurized:block/boiler_core.json", "y": 90 },
-    "facing=south": { "model": "pressurized:block/boiler_core.json", "y": 180 },
-    "facing=west": { "model": "pressurized:block/boiler_core.json", "y": 270 }
+    "facing=north": { "model": "pressurized:block/boiler_core" },
+    "facing=east": { "model": "pressurized:block/boiler_core", "y": 90 },
+    "facing=south": { "model": "pressurized:block/boiler_core", "y": 180 },
+    "facing=west": { "model": "pressurized:block/boiler_core", "y": 270 }
   }
 }

@@ -3,8 +3,8 @@ package com.argus.pressurized.client;
 import com.argus.pressurized.Pressurized;
 import com.argus.pressurized.block.VisualBlock;
 import com.argus.pressurized.block.boiler.BoilerCoreBlock;
-import com.argus.pressurized.client.render.WireframeRenderer;
-import com.argus.pressurized.util.ModTags;
+import com.argus.pressurized.block.boiler.shell.BoilerShellBlock;
+import com.argus.pressurized.client.render.WireframeRendererTest;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
@@ -29,31 +30,20 @@ public class ClientEventHandler {
     public static boolean lookingAtVisualBlock = false;
 
     @SubscribeEvent
-    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) throws InstantiationException, IllegalAccessException {
         Level world = event.getLevel();
         BlockPos pos = event.getPos();
-        if (!world.isClientSide && event.getHand() == InteractionHand.MAIN_HAND && world.getBlockState(pos).getBlock() instanceof BoilerCoreBlock) {
-            BoilerCoreBlock block = (BoilerCoreBlock) world.getBlockState(event.getPos()).getBlock();
-
-            //world.getBlockState(pos.relative(Direction.byName("north"), 1)).is(BlockTags.create(new ResourceLocation("pressurized", "boiler_shell")))
-            //event.getEntity().sendSystemMessage(Component.literal("You right-clicked a BoilerCoreBlock!"));
-            event.getEntity().sendSystemMessage(Component.literal("Behind block: " + world.getBlockState(pos.relative(world.getBlockState(pos).getValue(block.FACING).getOpposite())).is(ModTags.Blocks.BOILER_SHELL_BLOCKS)));
-
-            int airBlockCount = BoilerCoreBlock.countAirBlocks(world, pos);
-            if (airBlockCount > 1000) {
-                event.getEntity().sendSystemMessage(Component.literal("The structure is too large: " + airBlockCount + " air blocks"));
-                BlockPos blockPos = pos; //new BlockPos(100, 64, 100);
-
-                float scale = 1.0F;
-                int color = 0xFF0000; // Red color in hexadecimal
-                float fadeInTime = 10.0F; // 10 ticks
-                float lifetime = 100.0F; // 100 ticks
-                float fadeOutTime = 10.0F; // 10 ticks
-
-                WireframeRenderer.addWireframe(blockPos, scale, color, fadeInTime, lifetime, fadeOutTime);
-
-            } else {
-                event.getEntity().sendSystemMessage(Component.literal("Structure size: " + airBlockCount + " air blocks"));
+        Block block = world.getBlockState(pos).getBlock();
+        if (!world.isClientSide && event.getHand() == InteractionHand.MAIN_HAND) {
+            if (block instanceof BoilerCoreBlock) {
+                BoilerCoreBlock.verifyBoilerStructure(event.getLevel(), event.getPos(), event.getEntity());
+                //WireframeRenderer.addWireframe(pos.relative(world.getBlockState(pos).getValue(BoilerCoreBlock.FACING)), 1, 0xFFFFFF, 10, 100, 10);
+                WireframeRendererTest.addWireframe(pos.relative(world.getBlockState(pos).getValue(BoilerCoreBlock.FACING)), 0.1f, 0xE32F08, 10, 100, 10);
+            } else if (block instanceof BoilerShellBlock) {
+                //event.getEntity().sendSystemMessage(Component.literal("clicked shell block"));
+                BoilerShellBlock.subtractHealth(world, event.getPos(), 5, event.getEntity());
+                event.getEntity().sendSystemMessage(Component.literal("removed health: "
+                        + world.getBlockState(pos).getValue(BoilerShellBlock.HEALTH) + " left"));
             }
         }
     }
@@ -75,8 +65,9 @@ public class ClientEventHandler {
     public static void updateBlockLooking() {
         lookingAtVisualBlock = false;
         if (MC.hitResult instanceof BlockHitResult blockHitResult)
-            if (MC.level.getBlockState(blockHitResult.getBlockPos()).getBlock() instanceof VisualBlock)
-                lookingAtVisualBlock = true;
+            if (MC.level != null)
+                if (MC.level.getBlockState(blockHitResult.getBlockPos()).getBlock() instanceof VisualBlock)
+                    lookingAtVisualBlock = true;
     }
 
     public static void renderVisualBlockInfo(PoseStack poseStack) {
