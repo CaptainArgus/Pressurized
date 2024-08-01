@@ -4,7 +4,7 @@ import com.argus.pressurized.Pressurized;
 import com.argus.pressurized.block.VisualBlock;
 import com.argus.pressurized.block.boiler.BoilerCoreBlock;
 import com.argus.pressurized.block.boiler.shell.BoilerShellBlock;
-import com.argus.pressurized.client.render.WireframeRendererTest;
+import com.argus.pressurized.client.render.WireframeRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -37,8 +37,9 @@ public class ClientEventHandler {
         if (!world.isClientSide && event.getHand() == InteractionHand.MAIN_HAND) {
             if (block instanceof BoilerCoreBlock) {
                 BoilerCoreBlock.verifyBoilerStructure(event.getLevel(), event.getPos(), event.getEntity());
-                //WireframeRenderer.addWireframe(pos.relative(world.getBlockState(pos).getValue(BoilerCoreBlock.FACING)), 1, 0xFFFFFF, 10, 100, 10);
-                WireframeRendererTest.addWireframe(pos.relative(world.getBlockState(pos).getValue(BoilerCoreBlock.FACING)), 0.1f, 0xE32F08, 10, 100, 10);
+                BlockPos bp = pos.relative(world.getBlockState(pos).getValue(BoilerCoreBlock.FACING));
+                WireframeRenderer.addWireframe(bp.getX(), bp.getY(), bp.getZ(), bp.getX() + 1, bp.getY() + 1,  bp.getZ() + 1, 0xFFFFFF, 10, 100, 10);
+                //WireframeRendererTest.addWireframe(pos.relative(world.getBlockState(pos).getValue(BoilerCoreBlock.FACING)), 0.1f, 0xE32F08, 10, 100, 10);
             } else if (block instanceof BoilerShellBlock) {
                 //event.getEntity().sendSystemMessage(Component.literal("clicked shell block"));
                 BoilerShellBlock.subtractHealth(world, event.getPos(), 5, event.getEntity());

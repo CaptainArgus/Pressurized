@@ -7,8 +7,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -29,16 +27,16 @@ public class WireframeRenderer {
 
     @SubscribeEvent
     public static void onRenderWorldLast(RenderLevelStageEvent event) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null) {
-            return;
-        }
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_BLOCK_ENTITIES) {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player == null || mc.level == null) {
+                return;
+            }
 
-        PoseStack poseStack = event.getPoseStack();
-
-        for (Wireframe wireframe : wireframes) {
-            if (wireframe.shouldRender()) {
-                renderWireframe(poseStack, wireframe.pos, wireframe.scale, wireframe.color);
+            for (Wireframe wireframe : wireframes) {
+                if (wireframe.shouldRender()) {
+                    renderWireframe(event.getPoseStack(), wireframe.minX, wireframe.minY, wireframe.minZ, wireframe.maxX, wireframe.maxY, wireframe.maxZ, wireframe.color);
+                }
             }
         }
     }
@@ -59,47 +57,49 @@ public class WireframeRenderer {
         }
     }
 
-    public static void addWireframe(BlockPos pos, float scale, int color, float fadeInTime, float lifetime, float fadeOutTime) {
-        wireframes.add(new Wireframe(pos, scale, color, fadeInTime, lifetime, fadeOutTime));
+    public static void addWireframe(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, int color, float fadeInTime, float lifetime, float fadeOutTime) {
+        wireframes.add(new Wireframe(minX, minY, minZ, maxX, maxY, maxZ, color, fadeInTime, lifetime, fadeOutTime));
         Pressurized.LOGGER.info("Adding wireframe");
     }
 
+    /*
     public static void removeWireframe(BlockPos pos) {
         wireframes.removeIf(wireframe -> wireframe.pos.equals(pos));
         Pressurized.LOGGER.info("Removing wireframe");
     }
+     */
 
-    public static void renderWireframe(PoseStack poseStack, BlockPos pos, float scale, int color) {
-        Minecraft minecraft = Minecraft.getInstance();
-        Vec3 cameraPos = minecraft.gameRenderer.getMainCamera().getPosition();
-        AABB box = new AABB(pos).inflate(scale).move(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+    public static void renderWireframe(PoseStack poseStack, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, int color) {
+        Minecraft MC = Minecraft.getInstance();
+        Vec3 camera = MC.gameRenderer.getMainCamera().getPosition();
+
+        float r = (color >> 16 & 255) / 255.0F;
+        float g = (color >> 8 & 255) / 255.0F;
+        float b = (color & 255) / 255.0F;
+        float a = 1.0F;
 
         RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.lineWidth(3.0F);
+        RenderSystem.lineWidth(5.0F);
         RenderSystem.depthMask(false);
 
-        VertexConsumer buffer = minecraft.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
+        VertexConsumer vertexConsumer = MC.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
 
-        drawBox(buffer, box, poseStack, color);
+        poseStack.pushPose();
+        poseStack.translate(-camera.x, -camera.y, -camera.z);
+        drawBox(vertexConsumer, minX, minY, minZ, maxX, maxY, maxZ, poseStack, color);
+        poseStack.popPose();
 
         RenderSystem.depthMask(true);
-        minecraft.renderBuffers().bufferSource().endBatch(RenderType.LINES);
+        MC.renderBuffers().bufferSource().endBatch(RenderType.LINES);
     }
 
-    private static void drawBox(VertexConsumer buffer, AABB box, PoseStack stack, int color) {
+    private static void drawBox(VertexConsumer buffer, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, PoseStack stack, int color) {
         float red = (color >> 16 & 255) / 255.0F;
         float green = (color >> 8 & 255) / 255.0F;
         float blue = (color & 255) / 255.0F;
         float alpha = 1.0F;
-
-        float minX = (float) box.minX;
-        float minY = (float) box.minY;
-        float minZ = (float) box.minZ;
-        float maxX = (float) box.maxX;
-        float maxY = (float) box.maxY;
-        float maxZ = (float) box.maxZ;
 
         //bottom
         drawLine(buffer, stack, minX, minY, minZ, maxX, minY, minZ, red, green, blue, alpha);
@@ -129,17 +129,25 @@ public class WireframeRenderer {
     }
 
     private static class Wireframe {
-        private final BlockPos pos;
-        private final float scale;
+        private final float minX;
+        private final float minY;
+        private final float minZ;
+        private final float maxX;
+        private final float maxY;
+        private final float maxZ;
         private final int color;
         private final float fadeInTime;
         private final float lifetime;
         private final float fadeOutTime;
         private float age;
 
-        public Wireframe(BlockPos pos, float scale, int color, float fadeInTime, float lifetime, float fadeOutTime) {
-            this.pos = pos;
-            this.scale = scale;
+        public Wireframe(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, int color, float fadeInTime, float lifetime, float fadeOutTime) {
+            this.minX = minX;
+            this.minY = minY;
+            this.minZ = minZ;
+            this.maxX = maxX;
+            this.maxY = maxY;
+            this.maxZ = maxZ;
             this.color = color;
             this.fadeInTime = fadeInTime;
             this.lifetime = lifetime;

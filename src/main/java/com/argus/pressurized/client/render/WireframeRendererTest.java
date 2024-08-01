@@ -78,11 +78,11 @@ public class WireframeRendererTest {
         float b = (color & 255) / 255.0F;
         float a = 1.0F;
 
+        RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.lineWidth(5.0F);
         RenderSystem.depthMask(false);
-        RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
 
         VertexConsumer vertexConsumer = MC.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
 
