@@ -38,7 +38,7 @@ public class ClientEventHandler {
             if (block instanceof BoilerCoreBlock) {
                 BoilerCoreBlock.verifyBoilerStructure(event.getLevel(), event.getPos(), event.getEntity());
                 BlockPos bp = pos.relative(world.getBlockState(pos).getValue(BoilerCoreBlock.FACING));
-                WireframeRenderer.addWireframe(bp.getX(), bp.getY(), bp.getZ(), bp.getX() + 1, bp.getY() + 1,  bp.getZ() + 1, 0xFFFFFF, 10, 100, 10);
+                WireframeRenderer.addWireframe(bp.getX(), bp.getY(), bp.getZ(), bp.getX() + 1, bp.getY() + 1,  bp.getZ() + 1, 0xE32F08, 100);
                 //WireframeRendererTest.addWireframe(pos.relative(world.getBlockState(pos).getValue(BoilerCoreBlock.FACING)), 0.1f, 0xE32F08, 10, 100, 10);
             } else if (block instanceof BoilerShellBlock) {
                 //event.getEntity().sendSystemMessage(Component.literal("clicked shell block"));
