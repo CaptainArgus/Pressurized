@@ -1,7 +1,6 @@
 package com.argus.pressurized;
 
 import com.argus.pressurized.block.ModBlocks;
-import com.argus.pressurized.block.entity.ModBlockEntities;
 import com.argus.pressurized.client.ClientEventHandler;
 import com.argus.pressurized.client.render.ClientRenderEvent;
 import com.argus.pressurized.client.render.WireframeRenderer;
@@ -32,9 +31,7 @@ public class Pressurized {
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
-        ModBlockEntities.register(modEventBus);
         ModEntities.register(modEventBus);
-
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ClientRenderEvent.registerHandlers();
         }
