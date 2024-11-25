@@ -1,10 +1,10 @@
 package com.argus.pressurized.client;
 
 import com.argus.pressurized.Pressurized;
-import com.argus.pressurized.block.VisualBlock;
-import com.argus.pressurized.block.boiler.BoilerCoreBlock;
-import com.argus.pressurized.block.boiler.shell.BoilerShellBlock;
-import com.argus.pressurized.client.render.WireframeRenderer;
+import com.argus.pressurized.block.custom.BoilerCoreBlock;
+import com.argus.pressurized.block.custom.BoilerShellBlock;
+import com.argus.pressurized.block.custom.VisualBlock;
+import com.argus.pressurized.block.entity.BoilerShellBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -28,6 +28,7 @@ import java.util.List;
 public class ClientEventHandler {
     public static final Minecraft MC = Minecraft.getInstance();
     public static boolean lookingAtVisualBlock = false;
+    public static String visualBlockTranslationKey = "";
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) throws InstantiationException, IllegalAccessException {
@@ -35,16 +36,11 @@ public class ClientEventHandler {
         BlockPos pos = event.getPos();
         Block block = world.getBlockState(pos).getBlock();
         if (!world.isClientSide && event.getHand() == InteractionHand.MAIN_HAND) {
-            if (block instanceof BoilerCoreBlock) {
-                BoilerCoreBlock.verifyBoilerStructure(event.getLevel(), event.getPos(), event.getEntity());
-                BlockPos bp = pos.relative(world.getBlockState(pos).getValue(BoilerCoreBlock.FACING));
-                WireframeRenderer.addWireframe(bp.getX(), bp.getY(), bp.getZ(), bp.getX() + 1, bp.getY() + 1,  bp.getZ() + 1, 0xE32F08, 100);
-                //WireframeRendererTest.addWireframe(pos.relative(world.getBlockState(pos).getValue(BoilerCoreBlock.FACING)), 0.1f, 0xE32F08, 10, 100, 10);
+            if (block instanceof BoilerCoreBlock coreBlock) {
+                coreBlock.verifyBoilerStructure(event.getLevel(), event.getPos(), event.getEntity());
             } else if (block instanceof BoilerShellBlock) {
-                //event.getEntity().sendSystemMessage(Component.literal("clicked shell block"));
-                BoilerShellBlock.subtractHealth(world, event.getPos(), 5, event.getEntity());
-                event.getEntity().sendSystemMessage(Component.literal("removed health: "
-                        + world.getBlockState(pos).getValue(BoilerShellBlock.HEALTH) + " left"));
+                BoilerShellBlockEntity boilerShellBlockEntity = (BoilerShellBlockEntity) world.getBlockEntity(pos);
+                boilerShellBlockEntity.setHealth(boilerShellBlockEntity.getHealth() - 5);
             }
         }
     }
@@ -66,9 +62,17 @@ public class ClientEventHandler {
     public static void updateBlockLooking() {
         lookingAtVisualBlock = false;
         if (MC.hitResult instanceof BlockHitResult blockHitResult)
-            if (MC.level != null)
-                if (MC.level.getBlockState(blockHitResult.getBlockPos()).getBlock() instanceof VisualBlock)
+            if (MC.level != null) {
+                Block testBlock = MC.level.getBlockState(blockHitResult.getBlockPos()).getBlock();
+                if (testBlock instanceof VisualBlock block) {
                     lookingAtVisualBlock = true;
+                    visualBlockTranslationKey = block.getTranslationKey();
+                    if (testBlock instanceof BoilerShellBlock) {
+                        BoilerShellBlockEntity boilerShellBlockEntity = (BoilerShellBlockEntity) MC.level.getBlockEntity(blockHitResult.getBlockPos());
+                        visualBlockTranslationKey = "Health: " + boilerShellBlockEntity.getHealth();
+                    }
+                }
+            }
     }
 
     public static void renderVisualBlockInfo(PoseStack poseStack) {
@@ -76,7 +80,7 @@ public class ClientEventHandler {
         int screenHeight = MC.getWindow().getGuiScaledHeight();
 
         List<String> splitTooltip = new ArrayList<>();
-        String[] lines = Component.translatable("block.visualblock.inspect").getString().split("\n");
+        String[] lines = Component.translatable(visualBlockTranslationKey).getString().split("\n");
         for (String line : lines) {
             splitTooltip.add(line);
         }

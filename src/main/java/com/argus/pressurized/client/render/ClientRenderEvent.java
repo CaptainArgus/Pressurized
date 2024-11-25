@@ -2,6 +2,7 @@ package com.argus.pressurized.client.render;
 
 import com.argus.pressurized.Pressurized;
 import com.argus.pressurized.client.model.PressurepackModel;
+import com.argus.pressurized.entity.ModEntities;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.resources.ResourceLocation;
@@ -17,6 +18,7 @@ public class ClientRenderEvent {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         modBus.addListener(ClientRenderEvent::registerLayer);
         modBus.addListener(ClientRenderEvent::registerEntityRenderers);
+        modBus.addListener(ClientRenderEvent::onRegisterRenderers);
     }
 
     public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -25,10 +27,15 @@ public class ClientRenderEvent {
     }
 
     public static void registerEntityRenderers(EntityRenderersEvent.AddLayers event) {
-        Pressurized.LOGGER.info("<DEBUG> REGISTERING ENTITY RENDERER");
+        Pressurized.LOGGER.info("<DEBUG> REGISTERING PLAYER RENDERER LAYER");
         for (String skin : event.getSkins()) {
             PlayerRenderer playerRenderer = event.getSkin(skin);
             playerRenderer.addLayer(new PressurepackRenderer(playerRenderer, event.getEntityModels()));
         }
+    }
+
+    public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        Pressurized.LOGGER.info("<DEBUG> REGISTERING ENTITY RENDERER");
+        event.registerEntityRenderer(ModEntities.BLOCK_COLLECTION_ENTITY.get(), BlockCollectionEntityRenderer::new);
     }
 }

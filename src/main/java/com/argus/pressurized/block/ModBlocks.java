@@ -1,9 +1,8 @@
 package com.argus.pressurized.block;
 
 import com.argus.pressurized.Pressurized;
-import com.argus.pressurized.block.boiler.BoilerCoreBlock;
-import com.argus.pressurized.block.boiler.shell.t1.BoilerShellBlockTier1Damage0;
-import com.argus.pressurized.block.boiler.shell.t1.BoilerShellBlockTier1Damage1;
+import com.argus.pressurized.block.custom.BoilerCoreBlock;
+import com.argus.pressurized.block.custom.BoilerShellBlock;
 import com.argus.pressurized.item.ModItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -20,10 +19,12 @@ import java.util.function.Supplier;
 public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Pressurized.MODID);
 
-    public static final RegistryObject<Block> VISUAL_BLOCK = registerBlock("visual_block", () -> new VisualBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
     public static final RegistryObject<Block> BOILER_CORE_BLOCK = registerBlock("boiler_core", () -> new BoilerCoreBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
-    public static final RegistryObject<Block> BOILER_SHELL_BLOCK_T1_D1 = registerBlock("boiler_shell_t1_d1", () -> new BoilerShellBlockTier1Damage1(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
-    public static final RegistryObject<Block> BOILER_SHELL_BLOCK_T1_D0 = registerBlock("boiler_shell_t1_d0", () -> new BoilerShellBlockTier1Damage0(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<Block> BOILER_SHELL_BLOCK_TIER_1_DAMAGE_4 = registerBlock("boiler_shell_tier_1_damage_4", () -> new BoilerShellBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK), null));
+    public static final RegistryObject<Block> BOILER_SHELL_BLOCK_TIER_1_DAMAGE_3 = registerBlock("boiler_shell_tier_1_damage_3", () -> new BoilerShellBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK), BOILER_SHELL_BLOCK_TIER_1_DAMAGE_4));
+    public static final RegistryObject<Block> BOILER_SHELL_BLOCK_TIER_1_DAMAGE_2 = registerBlock("boiler_shell_tier_1_damage_2", () -> new BoilerShellBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK), BOILER_SHELL_BLOCK_TIER_1_DAMAGE_3));
+    public static final RegistryObject<Block> BOILER_SHELL_BLOCK_TIER_1_DAMAGE_1 = registerBlock("boiler_shell_tier_1_damage_1", () -> new BoilerShellBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK), BOILER_SHELL_BLOCK_TIER_1_DAMAGE_2));
+    public static final RegistryObject<Block> BOILER_SHELL_BLOCK_TIER_1_DAMAGE_0 = registerBlock("boiler_shell_tier_1_damage_0", () -> new BoilerShellBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK), BOILER_SHELL_BLOCK_TIER_1_DAMAGE_1));
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
          RegistryObject<T> toReturn = BLOCKS.register(name, block);

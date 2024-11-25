@@ -1,9 +1,11 @@
 package com.argus.pressurized;
 
 import com.argus.pressurized.block.ModBlocks;
+import com.argus.pressurized.block.entity.ModBlockEntities;
 import com.argus.pressurized.client.ClientEventHandler;
 import com.argus.pressurized.client.render.ClientRenderEvent;
 import com.argus.pressurized.client.render.WireframeRenderer;
+import com.argus.pressurized.entity.ModEntities;
 import com.argus.pressurized.item.ModItems;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
@@ -27,10 +29,12 @@ public class Pressurized {
     public Pressurized() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
+        ModEntities.register(modEventBus);
+
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ClientRenderEvent.registerHandlers();
         }

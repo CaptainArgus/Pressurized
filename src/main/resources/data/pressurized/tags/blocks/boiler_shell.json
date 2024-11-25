@@ -1,6 +1,10 @@
 {
   "values": [
-    "minecraft:stone",
-    "pressurized:coiler_core"
+    "pressurized:boiler_shell_tier_1_damage_0",
+    "pressurized:boiler_shell_tier_1_damage_1",
+    "pressurized:boiler_shell_tier_1_damage_2",
+    "pressurized:boiler_shell_tier_1_damage_3",
+    "pressurized:boiler_shell_tier_1_damage_4",
+    "pressurized:boiler_core"
   ]
 }

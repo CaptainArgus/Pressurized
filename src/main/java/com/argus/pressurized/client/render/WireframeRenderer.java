@@ -13,13 +13,13 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Mod.EventBusSubscriber(modid = Pressurized.MODID, value = Dist.CLIENT)
 public class WireframeRenderer {
 
-    private static final Set<Wireframe> wireframes = new HashSet<>();
+    private static final List<Wireframe> wireframes = new ArrayList<>();
 
     @SubscribeEvent
     public static void onRenderWorldLast(RenderLevelStageEvent event) {
@@ -31,7 +31,7 @@ public class WireframeRenderer {
 
             for (Wireframe wireframe : wireframes) {
                 if (wireframe.shouldRender()) {
-                    renderWireframe(event.getPoseStack(), wireframe.minX, wireframe.minY, wireframe.minZ, wireframe.maxX, wireframe.maxY, wireframe.maxZ, wireframe.color);
+                    renderWireframe(event.getPoseStack(), wireframe.minX, wireframe.minY, wireframe.minZ, wireframe.maxX, wireframe.maxY, wireframe.maxZ, wireframe.offset, wireframe.color);
                 }
             }
         }
@@ -51,8 +51,8 @@ public class WireframeRenderer {
         }
     }
 
-    public static void addWireframe(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, int color, float lifetime) {
-        wireframes.add(new Wireframe(minX, minY, minZ, maxX, maxY, maxZ, color, lifetime));
+    public static void addWireframe(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float offset, int color, float lifetime) {
+        wireframes.add(new Wireframe(minX, minY, minZ, maxX, maxY, maxZ, offset, color, lifetime));
     }
 
     /*
@@ -61,7 +61,7 @@ public class WireframeRenderer {
     }
      */
 
-    public static void renderWireframe(PoseStack poseStack, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, int color) {
+    public static void renderWireframe(PoseStack poseStack, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float offset, int color) {
         Minecraft MC = Minecraft.getInstance();
         Vec3 camera = MC.gameRenderer.getMainCamera().getPosition();
 
@@ -74,7 +74,7 @@ public class WireframeRenderer {
 
         poseStack.pushPose();
         poseStack.translate(-camera.x, -camera.y, -camera.z);
-        LevelRenderer.renderLineBox(poseStack, vertexConsumer, minX + 0.01, minY + 0.01, minZ + 0.01, maxX - 0.01, maxY - 0.01, maxZ - 0.01, r, g, b, a);
+        LevelRenderer.renderLineBox(poseStack, vertexConsumer, minX + offset, minY + offset, minZ + offset, maxX - offset, maxY - offset, maxZ - offset, r, g, b, a);
         poseStack.popPose();
     }
 
@@ -85,17 +85,19 @@ public class WireframeRenderer {
         private final float maxX;
         private final float maxY;
         private final float maxZ;
+        private final float offset;
         private final int color;
         private final float lifetime;
         private float age;
 
-        public Wireframe(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, int color, float lifetime) {
+        public Wireframe(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float offset, int color, float lifetime) {
             this.minX = minX;
             this.minY = minY;
             this.minZ = minZ;
             this.maxX = maxX;
             this.maxY = maxY;
             this.maxZ = maxZ;
+            this.offset = offset;
             this.color = color;
             this.lifetime = lifetime;
             this.age = 0;

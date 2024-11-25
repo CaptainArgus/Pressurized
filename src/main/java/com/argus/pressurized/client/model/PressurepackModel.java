@@ -39,7 +39,7 @@ public class PressurepackModel<T extends LivingEntity> extends EntityModel<T> {
 
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        // No animation required for the pressurepack
+        // yeah
     }
 
     @Override
