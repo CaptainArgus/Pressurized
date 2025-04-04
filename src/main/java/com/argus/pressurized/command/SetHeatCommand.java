@@ -1,0 +1,45 @@
+package com.argus.pressurized.command;
+
+import com.argus.pressurized.capability.ModCapabilities;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+
+public class SetHeatCommand {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("setHeat")
+                .requires(source -> source.hasPermission(2)) // Requires permission level 2 (cheat/OP level)
+                .then(Commands.argument("heatValue", IntegerArgumentType.integer())
+                        .executes(SetHeatCommand::execute)));
+    }
+
+    private static int execute(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Player player = context.getSource().getPlayerOrException();
+        ItemStack stack = player.getMainHandItem();
+
+        if (stack.isEmpty()) {
+            context.getSource().sendFailure(Component.literal("You are not holding an item!"));
+            return 0;
+        }
+
+        // Get the heat value from the command argument
+        int heatValue = IntegerArgumentType.getInteger(context, "heatValue");
+
+        // Update the ItemStack's NBT
+        stack.getOrCreateTag().putInt("Heat", heatValue);
+
+        // Provide feedback to the player
+        context.getSource().sendSuccess(
+                () -> Component.literal("Set Heat to " + heatValue + " for the held item."),
+                true
+        );
+
+        return 1;
+    }
+}

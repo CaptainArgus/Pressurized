@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "lit=true": { "model": "pressurized:block/crucible_furnace_lit" },
+    "lit=false": { "model": "pressurized:block/crucible_furnace"}
+  }
+}

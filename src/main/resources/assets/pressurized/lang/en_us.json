@@ -1,0 +1,5 @@
+{
+    "item.pressurized.pressure_cylinder": "Pressure Cylinder",
+    "block.visualblock.inspect": "§e§lVisual Block\n§aYour description goes here.\nYou can use newline characters!",
+    "container.pressurized.crucible_furnace_block": "Crucible Furnace"
+}

@@ -1,0 +1,13 @@
+{
+  "type": "pressurized:crucible_furnace",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_nugget"
+    }
+  ],
+  "output": {
+    "fluid": "minecraft:lava",
+    "amount": 144
+  },
+  "heat_required": 100
+}
